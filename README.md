@@ -1,0 +1,2 @@
+# html5_shooting_game_zgq
+小权拳版本的html5射击小游戏，非常简单且没有技术含量
