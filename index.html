@@ -3,18 +3,23 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta content="yes" name="apple-mobile-web-app-capable" />
+ <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+ <meta content="telephone=no" name="format-detection" />
+
  <title>抵御板砖</title>
  <style>
-   * {
-    margin: 0px
+   heml,body {
+    margin: 0px;
+    width: 100%;
    }
 
    /*背景*/
    .container {
-    height: 600px;
-    width: 500px;
+    height: 970px;
+    width: 100%;
     background: url(img/bg.jpg) no-repeat center / 100% 100%;;
-    margin: 5px auto; /*上下外边距5px，左右自动*/
+    margin: 1px auto; /*左右外边距1px，上下自动*/
     position: relative;
    }
 
@@ -26,7 +31,7 @@
     */
     background: url(img/zgq.png) no-repeat center / 100% 100%;
     position: absolute;
-    top: 350px;
+    top: 710px;
     left: calc(50% - 40px);
    }
 
@@ -107,14 +112,13 @@
  <script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
 </head>
 <body>
+<div class="container">
+ <div class="zgq">
+ </div>
+</div>
 <h2>得分：
  <span id="score" style="color: white;">0</span>
 </h2>
-<div class="container">
- <div class="zgq">
-
- </div>
-</div>
 <script type="text/javascript">
  // 入口函数
  $(function () {
@@ -259,7 +263,7 @@
    $(".container").append(enemy);
    // round()方法可把一个数字舍入为最接近的整数（四舍五入）
    var left = Math.round(Math.random() * ($(".container").innerWidth() - $(".enemy").innerWidth()));
-   enemy.css("left", left);
+   enemy.css("left", left+"%");
  }, enemyCreateInterval);
  // 让子弹飞计时器
  var bulletTimer = setInterval(() => {
