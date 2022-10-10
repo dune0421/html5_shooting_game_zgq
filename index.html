@@ -16,7 +16,7 @@
 
    /*背景*/
    .container {
-    height: 970px;
+    height: 770px;
     width: 100%;
     background: url(img/bg.jpg) no-repeat center / 100% 100%;;
     margin: 1px auto; /*左右外边距1px，上下自动*/
@@ -31,7 +31,7 @@
     */
     background: url(img/zgq.png) no-repeat center / 100% 100%;
     position: absolute;
-    top: 710px;
+    top: 510px;
     left: calc(50% - 40px);
    }
 
@@ -262,8 +262,8 @@
    var enemy = $("<div></div>").addClass("enemy").css("top", 0);
    $(".container").append(enemy);
    // round()方法可把一个数字舍入为最接近的整数（四舍五入）
-   var left = Math.round(Math.random() * ($(".container").innerWidth() - $(".enemy").innerWidth()));
-   enemy.css("left", left+"%");
+   var left = Math.round(Math.random() * ($(".container").innerWidth() - $(".enemy").innerWidth()))/1;
+   enemy.css("left", left);
  }, enemyCreateInterval);
  // 让子弹飞计时器
  var bulletTimer = setInterval(() => {
