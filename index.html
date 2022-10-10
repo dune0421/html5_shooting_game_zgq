@@ -1,1 +1,331 @@
-<h1>hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>抵御板砖</title>
+ <style>
+   * {
+    margin: 0px
+   }
+
+   /*背景*/
+   .container {
+    height: 600px;
+    width: 500px;
+    background: url(img/bg.jpg) no-repeat center / 100% 100%;;
+    margin: 5px auto; /*上下外边距5px，左右自动*/
+    position: relative;
+   }
+
+   /*权权*/
+   .zgq {
+    height: 240px;
+    width: 135px;
+    /*background:bg-color bg-image position/bg-size bg-repeat bg-origin bg-clip bg-attachment initial|inherit;
+    */
+    background: url(img/zgq.png) no-repeat center / 100% 100%;
+    position: absolute;
+    top: 350px;
+    left: calc(50% - 40px);
+   }
+
+   /*子弹*/
+   .bullet1 {
+    height: 20px;
+    width: 40px;
+    /*border-radius
+    *每个半径的四个值的顺序是：左上角，右上角，右下角，左下角。
+    *如果省略左下角，右上角是相同的。如果省略右下角，左上角是相同的。
+    *如果省略右上角，左上角是相同的。
+    */
+    border-radius: 25% 25% 25% 25%;
+    /*box-shadow: h-shadow v-shadow blur spread color inset;
+    *h-shadow: 必需，水平阴影的位置
+    *v-shadow: 必需，垂直阴影的位置
+    *blur: 可选，模糊距离
+    *spread: 可选，阴影的大小
+    *color: 可选，阴影的颜色
+    *inset: 可选，从外层的阴影（开始时）改变阴影内侧阴影
+    */
+    box-shadow: 2px 2px 10px yellow;
+    /*background: gold;*/
+    background: url(img/bullet1.png) no-repeat center / 100% 100%;
+    position: absolute;
+   }
+   .bullet2 {
+    height: 20px;
+    width: 60px;
+    /*border-radius
+    *每个半径的四个值的顺序是：左上角，右上角，右下角，左下角。
+    *如果省略左下角，右上角是相同的。如果省略右下角，左上角是相同的。
+    *如果省略右上角，左上角是相同的。
+    */
+    border-radius: 25% 25% 25% 25%;
+    /*box-shadow: h-shadow v-shadow blur spread color inset;
+    *h-shadow: 必需，水平阴影的位置
+    *v-shadow: 必需，垂直阴影的位置
+    *blur: 可选，模糊距离
+    *spread: 可选，阴影的大小
+    *color: 可选，阴影的颜色
+    *inset: 可选，从外层的阴影（开始时）改变阴影内侧阴影
+    */
+    box-shadow: 0px 0px 10px deeppink;
+    /*background: cornflowerblue;*/
+    background: url(img/bullet2.png) no-repeat center / 100% 100%;
+    position: absolute;
+   }
+
+   /*板砖*/
+   .enemy {
+    height: 60px;
+    width: 50px;
+    /*background:bg-color bg-image position/bg-size bg-repeat bg-origin bg-clip bg-attachment initial|inherit;
+    */
+    background: url(img/brick.png) no-repeat center / 100% 100%;
+    transform: rotate(180deg);
+    position: absolute;
+    overflow: hidden;
+    top: 0px;
+   }
+
+   h2 {
+    height: 40px;
+    display: table;
+    border-color: deepskyblue;
+    border-radius: 5px;
+    background-color: deepskyblue;
+    text-align: center;
+    padding: 5px;
+    position: relative;
+    float: right;
+    right: 250px;
+   }
+ </style>
+ <!--引入jQuery-->
+ <!-- <script src="jquery-3.4.1.js"></script>-->
+ <script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
+</head>
+<body>
+<h2>得分：
+ <span id="score" style="color: white;">0</span>
+</h2>
+<div class="container">
+ <div class="zgq">
+
+ </div>
+</div>
+<script type="text/javascript">
+ // 入口函数
+ $(function () {
+ // 变量定义
+ var bulletCreateInterval = 500; // 子弹发射时间间隔
+ var bulletMoveInterval = 100; // 子弹飞行时间间隔
+ var bulletSpeed = 10;  // 子弹飞行速度
+ var enemyCreateInterval = 750; // 敌机出生时间间隔
+ var enemyMoveInterval = 100; // 敌机下降时间间隔
+ var enemySpeed = 10;   // 敌机下降速度
+ var bGamePlaying = false;  // 游戏状态
+ var score = 0;  // 分数
+ var endTime = new Date();
+ // 计算飞机位置
+ var calcPosition = (left, top, maxLeft, maxTop, minLeft = 0, minTop = 0) => {
+  left = left < minLeft ? minLeft : left > maxLeft ? maxLeft : left;
+  top = top < minTop ? minTop : top > maxTop ? maxTop : top;
+  return {left, top};
+ }
+ // 获取DOM对象的四个边界位置
+ var getDomTRBL = (dom) => {
+  var bounds = {};
+  bounds.left = dom.offsetLeft;
+  bounds.right = dom.offsetLeft + dom.offsetWidth;
+  bounds.top = dom.offsetTop;
+  bounds.bottom = dom.offsetTop + dom.offsetHeight;
+  return bounds;
+ }
+
+ // 计算两个div是否相撞
+ var calcHit = (div1, div2) => {
+  var bounds1 = getDomTRBL(div1);
+  var bounds2 = getDomTRBL(div2);
+  if (bounds1.left >= bounds2.left && bounds1.left <= bounds2.right) {
+  if (bounds1.top >= bounds2.top && bounds1.top <= bounds2.bottom) {
+   return true;
+  }
+  else if (bounds1.bottom >= bounds2.top && bounds1.bottom <= bounds2.bottom) {
+   return true;
+  }
+  }
+  else if (bounds1.right >= bounds2.left && bounds1.right <= bounds2.right) {
+  if (bounds1.top >= bounds2.top && bounds1.top <= bounds2.bottom) {
+   return true;
+  }
+  else if (bounds1.bottom >= bounds2.top && bounds1.bottom <= bounds2.bottom) {
+   return true;
+  }
+  }
+  return false;
+ }
+ // 发射子弹
+ var shoot = () => {
+  // 控制发射时间间隔
+  if (new Date() - endTime < bulletCreateInterval) {
+  return false;
+  }
+  /*addClass() 方法向被选元素添加一个或多个类名。
+  *该方法不会移除已存在的 class 属性，仅仅添加一个或多个类名到 class 属性。
+  *提示：如需添加多个类，请使用空格分隔类名。
+  */
+  var planeLF = $(".zgq").position().left;
+  var planeTP = $(".zgq").position().top;
+  var ran = Math.round(Math.random());
+  if (ran >0.7)
+   var bullet = $("<div></div>").addClass("bullet1");
+  else
+   var bullet = $("<div></div>").addClass("bullet2");
+  $(".container").append(bullet);
+  var bulletLF = planeLF + $(".zgq").innerWidth() / 2 - bullet.innerWidth() / 2;
+  var bulletTP = planeTP - $(".zgq").innerHeight() / 2 + 20;
+  bullet.css("left", bulletLF).css("top", bulletTP);
+
+  endTime = new Date();
+  return true;
+ }
+ // 键盘按下事件
+ $(window).keydown(function (e) {
+  if (e.keyCode == 13) { //enter 开始游戏
+  bGamePlaying = true;
+  console.log("game start!")
+  }
+  if (!bGamePlaying) return;
+  var tp = $(".zgq").position().top;
+  var lf = $(".zgq").position().left;
+  switch (e.keyCode) {
+  case 87:// w
+   tp -= 10;
+   break;
+  case 83:// s
+   tp += 10;
+   break;
+  case 65:// a
+   lf -= 10;
+   break;
+  case 68:// d
+   lf += 10;
+   break;
+  case 74:// j
+   shoot(); // 发射子弹
+   break;
+  }
+  var maxLeft = $(".container").innerWidth() - $(".zgq").innerWidth();
+  var maxTop = $(".container").innerHeight() - $(".zgq").innerHeight();
+  var position = calcPosition(lf, tp, maxLeft, maxTop);
+  $(".zgq").css("left", position.left).css("top", position.top);
+ });
+ // 鼠标移动事件
+ var containerBounds = getDomTRBL($(".container")[0]);
+ $(document).mousemove(function (e) {
+  if (!bGamePlaying)
+   return;
+  // var tp = e.pageY;
+  var tp = containerBounds.bottom - 130;
+  var lf = e.pageX;
+  if (tp >= containerBounds.top && tp <= containerBounds.bottom && lf >= containerBounds.left && lf <= containerBounds.right) {
+   //计算相对位置
+   tp -= containerBounds.top;
+   lf -= containerBounds.left;
+  }
+  else
+   return;
+  tp -= $(".zgq").innerHeight() / 2;
+  lf -= $(".zgq").innerWidth() / 2;
+  var maxLeft = $(".container").innerWidth() - $(".zgq").innerWidth();
+  var maxTop = $(".container").innerHeight() - $(".zgq").innerHeight();
+  var position = calcPosition(lf, tp, maxLeft, maxTop);
+  $(".zgq").css("left", position.left).css("top", position.top);
+ });
+ // 鼠标点击事件
+ $(window).click(() => {
+  if (!bGamePlaying) {
+  bGamePlaying = true;
+  }
+  shoot();
+ });
+ // 为了便于对计时器进行操作，选择用一个计时器对选取到的所有元素进行操作
+ // 这样可以大幅减少计时器的数目
+ // 生成敌方战机计时器
+ var enemyCreateTimer = setInterval(() => {
+   var enemy = $("<div></div>").addClass("enemy").css("top", 0);
+   $(".container").append(enemy);
+   // round()方法可把一个数字舍入为最接近的整数（四舍五入）
+   var left = Math.round(Math.random() * ($(".container").innerWidth() - $(".enemy").innerWidth()));
+   enemy.css("left", left);
+ }, enemyCreateInterval);
+ // 让子弹飞计时器
+ var bulletTimer = setInterval(() => {
+  $(".bullet1").each((index, element) => {
+  var bullet = $(element);
+  bullet.css("top", bullet.position().top - bulletSpeed);
+  if (bullet.position().top < 0) {
+   bullet.remove();
+  }
+  });
+  $(".bullet2").each((index, element) => {
+   var bullet = $(element);
+   bullet.css("top", bullet.position().top - bulletSpeed);
+   if (bullet.position().top < 0) {
+    bullet.remove();
+   }
+  });
+ }, bulletMoveInterval);
+ // 敌机下落计时器
+ var enemyTimer = setInterval(() => {
+  $(".enemy").each((index, element) => {
+  var enemy = $(element);
+  enemy.css("top", enemy.position().top + enemySpeed);
+  if (enemy.position().top + 50 > $(".container").innerHeight()) {
+   enemy.remove();
+  }
+  });
+ }, enemyMoveInterval);
+ // 游戏主计时器
+ var mainTimer = setInterval(() => {
+  var plane = $(".zgq").get(0);
+  $(".enemy").each(function (index, enemy) {
+  //判断玩家是否撞上了敌机
+  if (calcHit(plane, enemy) || calcHit(enemy, plane)) {
+   stopGame();
+   return;
+  }
+  // 判断子弹是否撞上敌机
+  $(".bullet1").each((index, bullet) => {
+   if (calcHit(enemy, bullet) || calcHit(bullet, enemy)) {
+   enemy.remove();
+   bullet.remove();
+   score += 10;
+   $("#score").text(score);
+   }
+  });
+   $(".bullet2").each((index, bullet) => {
+    if (calcHit(enemy, bullet) || calcHit(bullet, enemy)) {
+     enemy.remove();
+     bullet.remove();
+     score += 10;
+     $("#score").text(score);
+    }
+   });
+  });
+ }, 50);
+ // 停止游戏
+ var stopGame = () => {
+  bGamePlaying = false;
+  clearInterval(enemyCreateTimer);
+  clearInterval(enemyTimer);
+  clearInterval(bulletTimer);
+  clearInterval(mainTimer);
+  alert("游戏结束！你的积分为" + score);
+ }
+ });
+</script>
+</body>
+</html>
